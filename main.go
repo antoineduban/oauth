@@ -23,7 +23,9 @@ const (
 )
 
 type Connector interface {
-	GetClient(key, secret string) (interface{}, error)
+	GetClient(key string) (interface{}, error)
+	CheckClientRedirectURI(client interface{}, redirectURI string) (bool, error)
+	AuthenticateClient(key, secret string) (interface{}, error)
 	GetUserFromAccessToken(accessToken string) (interface{}, error)
 	AuthenticateUser(username, password string) (interface{}, error)
 	GetAccessToken(interface{}, interface{}) (JSONAble, error)
@@ -155,7 +157,7 @@ func clientBasicAuth(req *http.Request) (interface{}, *OAuthError) {
 	clientKey := splt[0]
 	clientSecret := splt[1]
 
-	client, fail := kConnector.GetClient(clientKey, clientSecret)
+	client, fail := kConnector.AuthenticateClient(clientKey, clientSecret)
 	if fail != nil {
 		log.Error("[Oauth] Unable to retreive client: " + fail.Error())
 		return nil, &OAuthError{500, SERVER_ERROR, "Internal Server Error"}
@@ -295,7 +297,15 @@ func HandleRequest(res http.ResponseWriter, req *http.Request) {
 
 type dummyConnector struct{}
 
-func (c dummyConnector) GetClient(key, secret string) (interface{}, error) {
+func (c dummyConnector) GetClient(key string) (interface{}, error) {
+	return nil, errors.New("GetClient is not implemented")
+}
+
+func (c dummyConnector) CheckClientRedirectURI(client interface{}, redirectURI string) (bool, error) {
+	return false, errors.New("CheckClientRedirectURI is not implemented")
+}
+
+func (c dummyConnector) AuthenticateClient(key, secret string) (interface{}, error) {
 	return nil, errors.New("GetClient is not implemented")
 }
 
