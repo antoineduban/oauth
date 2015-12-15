@@ -177,6 +177,10 @@ func oauthErrorReply(res http.ResponseWriter, oauthErr OAuthError) error {
 	return nil
 }
 
+func isJSON(contentType string) bool {
+	return strings.SplitN(contentType, ";", 2)[0] == "application/json"
+}
+
 func HandleRequest(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("Cache-Control", "no-store")
 	res.Header().Add("Pragma", "no-cache")
@@ -194,7 +198,7 @@ func HandleRequest(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		if req.Header.Get("Content-Type") != "application/json;charset=UTF-8" {
+		if !isJSON(req.Header.Get("Content-Type")) {
 			oauthErrorReply(res, OAuthError{400, INVALID_REQUEST, "Only JSON body is accepted"})
 			return
 		}
